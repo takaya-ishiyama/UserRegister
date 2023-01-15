@@ -40,7 +40,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     icon = models.ImageField(verbose_name='プロフィール画像', upload_to="icon/", blank=True, null=True)
     birth=models.DateField(verbose_name='誕生日', null=True, blank=True)
     sex=models.IntegerField(verbose_name='性別', choices=SEX_CHOICES, null=True, blank=True)
-    userpolicy=models.BooleanField(verbose_name='利用規約', null=True, blank=True, default=False)
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
     is_staff = models.BooleanField(_("staff status"), default=False)
     is_active = models.BooleanField(_("active"), default=True)

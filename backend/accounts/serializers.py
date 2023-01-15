@@ -13,7 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
             'icon',
             'birth',
             'sex',
-            'userpolicy',
         )
 
     def create(self, validated_data):

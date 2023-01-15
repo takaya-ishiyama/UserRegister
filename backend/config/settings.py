@@ -44,8 +44,7 @@ INSTALLED_APPS = [
     'accounts',
     'django.contrib.sites',
     'rest_framework.authtoken',
-    # 'dj_rest_auth',
-    # 'dj_rest_auth.registration',
+    'rest_framework_simplejwt.token_blacklist', 
 ]
 
 # SOCIALACCOUNT_PROVIDERS = {
