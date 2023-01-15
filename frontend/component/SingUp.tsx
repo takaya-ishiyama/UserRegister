@@ -1,5 +1,5 @@
-import { Box, Button, Flex, Input, Select, SelectField } from '@chakra-ui/react';
-import React from 'react'
+import { Box, Button, Checkbox, Flex, Input, Select, SelectField } from '@chakra-ui/react';
+import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form';
 import ReactDatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -10,17 +10,18 @@ const SingUp = () => {
         register,
         getValues,
         setValue,
-        handleSubmit,
         formState: {errors, isValid},
         control,
     } = useForm<User>({reValidateMode: "onSubmit"});
+    const [userpolicy, setUserPolicy] = useState<boolean>(false);
 
-    const onSubmit = (data: any, e: any) => console.log(data, e);
-    const onError = (errors: any, e: any) => console.log(errors, e);
+    const handleSubmit = (e: any) => {
+        console.log(e)
+    };
     
     return (
         <>
-            <form onSubmit={handleSubmit(onSubmit, onError)}>
+            <form onSubmit={handleSubmit}>
                 <Flex
                     mx={"1rem"}
                     w={"40%"}
@@ -32,14 +33,12 @@ const SingUp = () => {
                     borderColor={errors.username? "red": "glay"}
                     {...register("username", {required: "入力してください"})}
                 />
-                {/* {errors.username && errors.username.message} */}
                 <Box>パスワード</Box>
                 <Input
                     mb={3}
                     borderColor={errors.password? "red": "glay"}
                     {...register("password",{required: "入力してください"})}
                 />
-                {/* {errors.password && errors.password.message} */}
                 <Box>E-Mail</Box>
                 <Input
                     mb={3}
@@ -69,13 +68,20 @@ const SingUp = () => {
                     <option value={1}>女性</option>
                 </Select>   
                 <Box>利用規約</Box>
-                  
+                <Checkbox
+                    size={"lg"}
+                    checked={userpolicy}
+                    onChange={()=>{setUserPolicy(!userpolicy)}}
+                >
+                    同意する
+                </Checkbox>  
                 <Button
                     w={"15%"}
                     display={"inline-block"}
                     type="submit"
                     bgColor={"blue.300"}
                     textAlign={"center"}
+                    disabled={!userpolicy}
                 >
                     送信
                 </Button>
