@@ -2,7 +2,7 @@ import axios from "axios";
 import { destroyCookie } from 'nookies';
 import React, { useState, useEffect, useContext } from "react";
 
-const base_url = "http://localhost:8000/api";
+const base_url = "http://localhost:8000/account/api";
 interface User {
   id: string;
   email: string;
@@ -16,7 +16,7 @@ interface TokenResponse {
 }
 
 export async function AllUserListAxios() {
-  const {data} = await axios.get(`${base_url}/account/api/list/`);
+  const {data} = await axios.get(`${base_url}/list/`);
   return data;
 }
 
@@ -42,6 +42,7 @@ const fetchNewToken = (): Promise<Response> => {
   return fetch(url, {
     method: "POST",
     headers: {
+      "Accept": "application/json",
       "Content-Type": "application/json",
     },
     credentials: "include"
@@ -49,11 +50,11 @@ const fetchNewToken = (): Promise<Response> => {
 };
 
 async function fetchUser(token: string): Promise<Response> {
-  const url = makeUrl("/detail/1/")
+  const url = makeUrl("/detail/")
   return fetch(url, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `JWT ${token}`,
     },
   });
 }
@@ -172,7 +173,7 @@ export const AuthProvider = (): AuthContextProps => {
     setAccessToken("");
     setAccessTokenExpiry("");
     setNotAuthenticated();
-    const url = makeUrl("/api/logout/");
+    const url = makeUrl("/logout/");
     fetch(url, {
       method: "POST",
       credentials: "include"

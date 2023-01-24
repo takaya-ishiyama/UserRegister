@@ -1,7 +1,7 @@
 import { Box, Button, Checkbox, Flex, Input, Select, SelectField } from '@chakra-ui/react';
 import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form';
-import ReactDatePicker from 'react-datepicker'
+import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { User } from '../feature/type';
 
@@ -46,17 +46,19 @@ const SingUp = () => {
                     {...register("email",{pattern: {value: /^\w+@\w+/, message: "正しいメールアドレスを入力してください"}})}
                 />
                 <Box>誕生日</Box>
-                    <Controller
-                        control={control}
-                        name={"birth"}
-                        render={({ field: { onChange, value } }) => (
-                            <ReactDatePicker
-                                dateFormat="yyyy/MM/dd"
-                                onChange={onChange}
-                                selected={value as Date}
-                            />
-                        )}
-                    />      
+                    <Box>
+                        <Controller
+                            control={control}
+                            name={"birth"}
+                            render={({ field: { onChange, value } }) => (
+                                <DatePicker
+                                    dateFormat="yyyy/MM/dd"
+                                    onChange={onChange}
+                                    selected={value as Date}
+                                />
+                            )}
+                        />      
+                    </Box>
                 <Box>性別</Box>
                 <Select
                     mb={3}

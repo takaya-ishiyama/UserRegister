@@ -34,7 +34,7 @@ const HeaderComponent = () => {
                 p={1}
                 as={Button}
               >
-                <HamburgerIcon 
+                <HamburgerIcon
                   boxSize={9}
                   p={1}
                 />
