@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react'
-import { useQuery } from 'react-query';
-import { User, Users } from '../feature/type';
-import axios from "axios";
-import { AuthProvider } from '../feature/fetchUser';
+import { Button } from '@chakra-ui/react';
+import { GetUser } from '../feature/fetchUser';
 
 export const Top = () => {
     // const {data, isLoading, isError, error} = useQuery(['users'], fetchCurrentUser);
-    const data = AuthProvider();
     // useEffect(()=>{console.log(data)},[data]);;
+    const [user, setUser] = useState();
+
+
+    // function handleClick() {
+    //     console.log(user)
+    // }
+    useEffect(()=>{setUser(GetUser("takaya", "taka1480"))},[])
     return (
         <>
             TOP
+            {/* <Button onClick={handleClick}>cookie</Button> */}
         </>
     )
 }

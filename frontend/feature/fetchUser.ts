@@ -1,22 +1,11 @@
 import axios from "axios";
-import { destroyCookie } from 'nookies';
-import React, { useState, useEffect, useContext } from "react";
+import { destroyCookie, parseCookies, setCookie } from 'nookies';
+import { useState, useEffect, useContext } from "react";
 
 const base_url = "http://localhost:8000/account/api";
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  username: string;
-}
 
-interface TokenResponse {
-  access: string;
-  access_expires: number;
-}
-
-export async function AllUserListAxios() {
-  const {data} = await axios.get(`${base_url}/list/`);
+async function allUserListAxios() {
+  const {data} = await axios.get(`${base_url}/users/`);
   return data;
 }
 
@@ -30,149 +19,82 @@ const fetchToken = (username: string, password: string): Promise<Response> => {
     method: "POST",
     body: JSON.stringify({ username, password }),
     headers: {
+      "Accept": "application/json",
       "Content-Type": "application/json",
     },
-    credentials: "include"
   });
 };
 
-
 const fetchNewToken = (): Promise<Response> => {
   const url = makeUrl("/token/refresh/");
+  const cookies = parseCookies()
   return fetch(url, {
     method: "POST",
+    body: JSON.stringify(cookies["refreshToken"]),
     headers: {
       "Accept": "application/json",
       "Content-Type": "application/json",
     },
-    credentials: "include"
   });
 };
 
-async function fetchUser(token: string): Promise<Response> {
+async function fetchUser(): Promise<Response> {
   const url = makeUrl("/detail/")
+  const cookies = parseCookies()
   return fetch(url, {
     method: "GET",
     headers: {
-      Authorization: `JWT ${token}`,
+      Authorization: `JWT ${cookies["accessToken"]}`,
     },
   });
 }
 
-type AuthContextProps = {
-  isAuthenticated: boolean;
-  loading: boolean;
-  user: User | null;
-  login: (username: string, password: string) => Promise<Response>;
-  logout: () => void;
-  getToken: () => Promise<string>;
-}
 
 
-export const AuthProvider = (): AuthContextProps => {
-  const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessToken] = useState<string>("");
-  const [accessTokenExpiry, setAccessTokenExpiry] = useState<number | string>("");
+export const GetUser = (username:string, password: string) => {
+  const [user, setUser] = useState<any>();
+  const [is_accesstoken, setIsAccessToken] = useState(false);
+  const [is_refreshtoken, setIsRefreshToken] = useState(false);
+  let cookies = parseCookies()
 
-  const setNotAuthenticated = (): void => {
-    setIsAuthenticated(false);
-    setLoading(false);
-    setUser(null);
-  };
+  // useEffect(()=>{auth(username, password)},[]);
+  useEffect(()=>{login(username, password)},[]);
+  useEffect(()=>{cookies = parseCookies()},[parseCookies()]);
 
-  const accessTokenIsValid = (): boolean => {
-    if (accessToken === "") {
-      return false;
-    }
-    const expiry = new Date(accessTokenExpiry);
-    console.log("Checking token expiry:", expiry);
-    return expiry.getTime() > Date.now();
-  }
-
-  const initAuth = async (): Promise<void> => {
-    setLoading(true);
-    if (!accessTokenIsValid()) {
-      console.log("Invalid access token so refetching")
-      await refreshToken();
-    } else {
-      setIsAuthenticated(true);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    initAuth();
-  }, []);
-
-  const initUser = async (token: string): Promise<void> => {
-    const resp = await fetchUser(token);
-    const user = await resp.json();
-    setUser(user);
-  }
-
-  const refreshToken = async (): Promise<any> => {
-    setLoading(true);
-    const resp = await fetchNewToken();
-    if (!resp.ok) {
-      setNotAuthenticated();
-      return;
-    }
-    const tokenData = await resp.json();
-    handleNewToken(tokenData);
-    if (user === null) {
-      console.log("No user loaded so loading from refreshed token");
-      await initUser(tokenData.access);
-    }
-    return tokenData.access;
-  }
-
-  const handleNewToken = (data: TokenResponse): void => {
-    setAccessToken(data.access);
-    const expiryInt = data.access_expires * 1000;
-    setAccessTokenExpiry(expiryInt);
-    setIsAuthenticated(true);
-    setLoading(false);
-  }
-
-  const login = async (username: string, password: string): Promise<Response> => {
+  const login = async (username: string, password: string)=> {
     const resp = await fetchToken(username, password);
     if (resp.ok) {
       const tokenData = await resp.json();
-      handleNewToken(tokenData);
-      await initUser(tokenData.access);
+      setCookie(null, 'accessToken', tokenData.access, {
+          maxAge: 60 * 60,/*60min X 60second*/
+      })
+      setCookie(null, 'refreshToken', tokenData.refresh, {
+          maxAge: 30 * 24 * 60 * 60,/* 24h X 60min X 60second*/
+      })
+      setIsRefreshToken(true);
+      const respuser = await fetchUser();
+      const _user = await respuser.json()
+      return _user
     } else {
-      setIsAuthenticated(false);
-      setLoading(true);
-      // ハンドルエラー
+      console.log("error : fetch access token");
+      return;
     }
-    return resp;
   };
-
-  const getToken = async (): Promise<string> => {
-    // Returns an access token if there's one or refetches a new one
-    console.log("Getting access token..");
-    if (accessTokenIsValid()) {
-      console.log("Getting access token.. existing token still valid");
-      return Promise.resolve(accessToken);
-    } else if (loading) {
-      while (loading) {
-        console.log("Getting access token.. waiting for token to be refreshed");
-      }
-      // Assume this means the token is in the middle of refreshing
-      return Promise.resolve(accessToken);
-    } else {
-      console.log("Getting access token.. getting a new token");
-      const token = await refreshToken();
-      return token;
+  
+  const getToken = async () => {
+    const resp = await fetchNewToken();
+    if(resp.ok){
+      const tokenData = await resp.json();
+      setCookie(null, 'accessToken', tokenData.access,{
+        maxAge: 60 * 60,/*60min X 60second*/ 
+      })
+      setIsAccessToken(true)
+    }else{
+      console.log("error : fetch refresh token ")
+      return;
     }
   }
-
   const logout = (): void => {
-    setAccessToken("");
-    setAccessTokenExpiry("");
-    setNotAuthenticated();
     const url = makeUrl("/logout/");
     fetch(url, {
       method: "POST",
@@ -180,15 +102,22 @@ export const AuthProvider = (): AuthContextProps => {
     });
   };
 
-  const value = {
-    isAuthenticated,
-    user,
-    loading,
-    login,
-    logout,
-    getToken,
+   async function auth (username: string, password: string) {
+    if(cookies){
+      try{
+        const resp = await login(username, password);
+        setUser(resp)
+      }catch{
+        await getToken();
+        const resp = await fetchUser();
+        const _user = await resp.json();
+        setUser(_user);
+      }
+    }else{
+      console.log("error auth")
+      return;
+    }
   };
-
-  return value;
+  return user;
 };
 
