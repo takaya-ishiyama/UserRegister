@@ -1,6 +1,7 @@
 from dataclasses import fields
 from rest_framework import serializers
 from .models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,7 +14,6 @@ class UserSerializer(serializers.ModelSerializer):
             'icon',
             'birth',
             'sex',
-            'userpolicy',
         )
 
     def create(self, validated_data):

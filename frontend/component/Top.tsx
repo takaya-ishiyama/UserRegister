@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { getServerSideProps } from '../feature/fetchapi';
-import { useQuery } from 'react-query';
-import { User, Users } from '../feature/type';
+import { Button } from '@chakra-ui/react';
+import {Login} from '../feature/fetchUser';
 
 export const Top = () => {
-    const {data, isLoading, isError, error} = useQuery(['users'], getServerSideProps);
+    const User = Login("takaya","taka1480");
+
     return (
         <>
             TOP
+            {/* <Button onClick={handleClick}>cookie</Button> */}
         </>
     )
 }
