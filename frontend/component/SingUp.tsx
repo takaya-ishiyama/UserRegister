@@ -46,19 +46,17 @@ const SingUp = () => {
                     {...register("email",{pattern: {value: /^\w+@\w+/, message: "正しいメールアドレスを入力してください"}})}
                 />
                 <Box>誕生日</Box>
-                    <Box>
-                        <Controller
-                            control={control}
-                            name={"birth"}
-                            render={({ field: { onChange, value } }) => (
-                                <DatePicker
-                                    dateFormat="yyyy/MM/dd"
-                                    onChange={onChange}
-                                    selected={value as Date}
-                                />
-                            )}
-                        />      
-                    </Box>
+                    <Controller
+                        control={control}
+                        name={"birth"}
+                        render={({ field: { onChange, value } }) => (
+                            <DatePicker
+                                dateFormat="yyyy/MM/dd"
+                                onChange={onChange}
+                                selected={value as Date}
+                            />
+                        )}
+                    />      
                 <Box>性別</Box>
                 <Select
                     mb={3}

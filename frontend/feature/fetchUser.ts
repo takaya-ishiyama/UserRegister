@@ -1,6 +1,8 @@
+import { useToast } from "@chakra-ui/react";
 import axios from "axios";
 import { destroyCookie, parseCookies, setCookie } from 'nookies';
 import { useState, useEffect, useContext } from "react";
+import { User } from "./type";
 
 const base_url = "http://localhost:8000/account/api";
 
@@ -50,7 +52,7 @@ async function fetchUser(): Promise<Response> {
 }
 
 
-export const Login = async (username: string, password: string) => {
+export const GetUser = async (username: string, password: string): Promise<Response | undefined> => {
   const resp = await fetchToken(username, password);
   if (resp.ok) {
     const tokenData = await resp.json();
@@ -60,10 +62,9 @@ export const Login = async (username: string, password: string) => {
     setCookie(null, 'refreshToken', tokenData.refresh, {
         maxAge: 30 * 24 * 60 * 60,/* 24h X 60min X 60second*/
     })
-    // setIsRefreshToken(true);
     const respuser = await fetchUser();
-    const User = await respuser.json();
-    return User;
+    // const User: User = await respuser.json();
+    return respuser;
   } else {
     console.log("error : fetch access token");
     return;
