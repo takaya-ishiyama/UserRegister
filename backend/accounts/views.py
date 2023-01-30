@@ -1,67 +1,41 @@
-from django.views.generic import TemplateView
 from .models import User
 from django.views.decorators.csrf import csrf_exempt
 from .serializers import UserSerializer
-from rest_framework.parsers import JSONParser
-from django.http import HttpResponse, JsonResponse
-from rest_framework import generics, response
-from rest_framework.permissions import AllowAny, IsAdminUser
-
-class UserListView(generics.ListCreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (AllowAny,) 
-    # permission_classes = [IsAdminUser]
+from rest_framework import generics
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework import viewsets, filters
+import jwt
+from config import settings
 
 class UserDetailView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
     serializer_class = UserSerializer
-    # permission_classes = [IsAdminUser]
-    permission_classes = (AllowAny,) 
+    permission_classes = (IsAuthenticated,)
 
-class DeleteUserView(generics.RetrieveDestroyAPIView):
-    queryset = User.objects.all()
+    def get_object(self):
+        return self.request.user
+
+class UserUpdateView(generics.UpdateAPIView):
     serializer_class = UserSerializer
-    # permission_classes = [IsAdminUser]
-    permission_classes = (AllowAny,) 
+    permission_classes = (IsAuthenticated,)
+    queryset=User.objects.all()
 
-@csrf_exempt
-def user_list(request):
-    if request.method == 'GET':
-        items = User.objects.all()
-        serializer = UserSerializer(items, many=True)
-        return JsonResponse(serializer.data, safe=False)
+class UserCreateView(generics.ListCreateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
+    queryset=User.objects.all()
 
-    elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = UserSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+    # def get_object(self):
+    #     return self.request.user
 
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=User.objects.all()
+    serializer_class=UserSerializer
+    permission_classes = (AllowAny,)
 
-# @csrf_exempt
-# def user_detail(request, pk):
-#     try:
-#         item = User.objects.get(pk=pk)
-#     except User.DoesNotExist:
-#         return HttpResponse(status=404)
-
-#     if request.method == 'GET':
-#         serializer = UserSerializer(item)
-#         return JsonResponse(serializer.data)
-
-#     elif request.method == 'PUT':
-#         data = JSONParser().parse(request)
-#         serializer = UserSerializer(item, data=data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return JsonResponse(serializer.data)
-#         return JsonResponse(serializer.errors, status=400)
-
-#     elif request.method == 'DELETE':
-#         item.delete()
-#         return HttpResponse(status=204)
-
+    def get(self, JWT):
+        payload = jwt.decode(
+            jwt=JWT, key=settings.SECRET_KEY, algorithms=["HS256"]
+        )
+        return User.objects.get(id=payload["user_id"])
 

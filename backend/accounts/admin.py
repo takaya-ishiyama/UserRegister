@@ -13,5 +13,4 @@ class AdminRoom(admin.ModelAdmin):
         'icon',
         'birth',
         'sex',
-        'userpolicy',
     )
