@@ -15,6 +15,19 @@ class UserDetailView(generics.RetrieveAPIView):
     def get_object(self):
         return self.request.user
 
+class UserUpdateView(generics.UpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
+    queryset=User.objects.all()
+
+class UserCreateView(generics.ListCreateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
+    queryset=User.objects.all()
+
+    # def get_object(self):
+    #     return self.request.user
+
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=User.objects.all()
     serializer_class=UserSerializer

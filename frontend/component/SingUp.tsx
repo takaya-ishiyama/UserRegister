@@ -1,9 +1,11 @@
-import { Box, Button, Checkbox, Flex, Input, Select, SelectField } from '@chakra-ui/react';
+import { Box, Button, Checkbox, Flex, Input, Select, useToast } from '@chakra-ui/react';
 import React, { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form';
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { User } from '../feature/type';
+import { User, UserRegister } from '../feature/type';
+import { useMutationUserRegist } from '../feature/usermutationUserRegist';
+import { useRouter } from 'next/router';
 
 const SingUp = () => {
     const {
@@ -12,12 +14,53 @@ const SingUp = () => {
         setValue,
         formState: {errors, isValid},
         control,
-    } = useForm<User>({reValidateMode: "onSubmit"});
+    } = useForm<UserRegister>({reValidateMode: "onSubmit"});
     const [userpolicy, setUserPolicy] = useState<boolean>(false);
 
     const handleSubmit = (e: any) => {
-        console.log(e)
+        e.preventDefault();
+        console.log(e);
     };
+
+    const toast = useToast();
+    const router = useRouter();
+    const MutationUser = useMutationUserRegist(
+        getValues().username,
+        getValues().password1,
+        {
+        onSuccess: (data: User) => {
+          console.log('保存成功');
+          console.log(data);
+          toast({
+            title: '成功',
+            status: 'success',
+            position: 'top-right',
+            isClosable: true,
+          });
+          router.push(`${data.id}/home`);
+        },
+        onError: (error) => {
+          console.log('保存失敗');
+          toast({
+            title: '失敗',
+            status: 'error',
+            position: 'top-right',
+            isClosable: true,
+          });
+          console.log(error);
+        },
+    });
+
+    const create_user = () => {
+        MutationUser.mutate({
+            username: getValues().username,
+            email: getValues().email,
+            password: getValues().password1,
+            icon: getValues().icon,
+            birth: getValues().birth,
+            sex: getValues().sex,
+        })
+    }
     
     return (
         <>
@@ -36,8 +79,14 @@ const SingUp = () => {
                 <Box>パスワード</Box>
                 <Input
                     mb={3}
-                    borderColor={errors.password? "red": "glay"}
-                    {...register("password",{required: "入力してください"})}
+                    borderColor={errors.password1? "red": "glay"}
+                    {...register("password1",{required: "入力してください"})}
+                />
+                <Box>パスワード確認</Box>
+                <Input
+                    mb={3}
+                    borderColor={errors.password2? "red": "glay"}
+                    {...register("password2",{required: "入力してください"})}
                 />
                 <Box>E-Mail</Box>
                 <Input
@@ -82,6 +131,7 @@ const SingUp = () => {
                     bgColor={"blue.300"}
                     textAlign={"center"}
                     disabled={!userpolicy}
+                    onClick={()=>{create_user()}}
                 >
                     送信
                 </Button>
